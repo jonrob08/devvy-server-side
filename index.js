@@ -34,7 +34,7 @@ app.get('/', (req, res) => {
   res.json({ name: 'MERN Auth API', greeting: 'Welcome to the our API', author: 'YOU', message: "Smile, you are being watched by the Backend Engineering Team" });
 });
 
-app.use('/examples', require('./controllers/example'));
+// app.use('/examples', require('./controllers/example'));
 app.use('/users', require('./controllers/user'));
 
 // Server
