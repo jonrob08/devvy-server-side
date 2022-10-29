@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-// const Task = require('../models/task');
+const Task = require('../models/task');
 const Job = require('../models/job');
 
 
@@ -56,7 +56,12 @@ router.put('/:id', (req, res) => {
         console.log('Job found', foundJob);
         Job.findByIdAndUpdate(req.params.id, { 
                 title: req.body.title ? req.body.title : foundJob.title,
-                body: req.body.body ? req.body.body : foundJob.body,
+                // body: req.body.body ? req.body.body : foundJob.body,
+                url: req.body.url ? req.body.url : foundJob.url,
+                description: req.body.description ? req.body.description : foundJob.description,
+                status: req.body.status ? req.body.status : foundJob.status,
+                contactEmail: req.body.contactEmail ? req.body.contactEmail : foundJob.contactEmail,
+                contactName: req.body.contactName ? req.body.contactName : foundJob.contactName,
         }, { 
             upsert: true 
         })
@@ -91,7 +96,7 @@ router.delete('/:id', (req, res) => {
 
 // =============== BELOW RELATED TO COMMENTS ======================
 
-// GET a post's comments
+// GET a Jobs tasks
 router.get('/:id/comments', (req, res) => {
     Post.findById(req.params.id).populate('comments').exec()
     .then(post => {
