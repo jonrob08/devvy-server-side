@@ -14,7 +14,11 @@ const userSchema = new Schema({
         type: String,
         required: true,
         minLength: 8
-    }
+    },
+    jobs: [{
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'Job'
+    }]
 }, {
     timestamps: true
 })
