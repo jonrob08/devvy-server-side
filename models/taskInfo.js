@@ -1,14 +1,13 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
-const taskSchema = new Schema({
+const taskInfoSchema = new Schema({
     title: {
         type: String,
         required: true
     },
     description: {
-        type: String,
-        required: true
+        type: String
     },
     status: {
         type: String
@@ -18,14 +17,10 @@ const taskSchema = new Schema({
     },
     timeSpent: {
         type: String
-    },
-    taskInfo: [{
-        type: mongoose.Schema.Types.ObjectId, 
-        ref: 'TaskInfo'
-    }]
+    }
 }, {timestamps: true}
 )
 
-const Task = mongoose.model('Task', taskSchema);
+const TaskInfo = mongoose.model('TaskInfo', taskInfoSchema);
 
-module.exports = Task;
+module.exports = TaskInfo;
