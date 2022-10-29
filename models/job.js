@@ -20,7 +20,7 @@ const jobSchema = new Schema({
     contactEmail: {
         type: String
     },
-    contractName: {
+    contactName: {
         type: String
     },
     tasks: [{
