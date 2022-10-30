@@ -96,29 +96,45 @@ router.delete('/:id', (req, res) => {
 
 // =============== BELOW RELATED TO COMMENTS ======================
 
+router.get('/tasks/:id', (req, res) => {
+    Task.findById(req.params.id)
+    .then(task => {
+        console.log('Here is the task', task);
+        res.json({ task: task });
+    })
+    .catch(error => { 
+        console.log('error', error);
+        res.json({ message: "Error ocurred, please try again" });
+    });
+})
+
 // GET a Jobs tasks
-router.get('/:id/comments', (req, res) => {
-    Post.findById(req.params.id).populate('comments').exec()
-    .then(post => {
-        console.log('Hey is the post', post);
+router.get('/:id/tasks', (req, res) => {
+    Job.findById(req.params.id).populate('tasks').exec()
+    .then(task => {
+        console.log('Hey this is the task', task);
+        res.json({task: task })
     })
 })
 
-// create a comment on a post
-router.post('/:id/comments', (req, res) => {
-    Post.findById(req.params.id)
-    .then(post => {
-        console.log('Heyyy, this is the post', post);
+// create a task in a job
+router.post('/:id/tasks', (req, res) => {
+    Job.findById(req.params.id)
+    .then(job => {
+        console.log('Heyyy, this is the job', job);
         // create and pust comment inside of post
-        Comment.create({
-            header: req.body.header,
-            content: req.body.content
+        Task.create({
+            title: req.body.title,
+            description: req.body.description,
+            status: req.body.status, 
+            dueDate: req.body.dueDate,
+            timeSpent: req.body.timeSpent,
         })
-        .then(comment => {
-            post.comments.push(comment);
-            // save the post
-            post.save();
-            res.redirect(`/posts/${req.params.id}`);
+        .then(task => {
+            job.tasks.push(task);
+            // save the job
+            job.save();
+            res.redirect(`/jobs/${req.params.id}`);
         })
         .catch(error => { 
             console.log('error', error);
@@ -129,6 +145,48 @@ router.post('/:id/comments', (req, res) => {
         console.log('error', error);
         res.json({ message: "Error ocurred, please try again" });
     });
+});
+
+// update a task inside a job
+router.put('/tasks/:id', (req, res) => {
+    console.log('route is being on PUT')
+    Task.findById(req.params.id)
+        .then(foundTask => {
+            console.log('Task found', foundTask);
+            Task.findByIdAndUpdate(req.params.id,
+                {
+                    title: req.body.title ? req.body.title : foundTask.title,
+                    description: req.body.description ? req.body.description : foundTask.description,
+                    status: req.body.status ? req.body.status : foundTask.status, 
+                    dueDate: req.body.dueDate ? req.body.dueDate : foundTask.dueDate,
+                    timeSpent: req.body.timeSpent ? req.body.timeSpent : foundTask.timeSpent,
+                })
+                .then(task => {
+                    console.log('task was updated', task);
+                    res.redirect(`/jobs/tasks/${req.params.id}`)
+                })
+                .catch(error => {
+                    console.log('error', error)
+                    res.json({ message: "Error ocurred, please try again" })
+                })
+        })
+        .catch(error => {
+            console.log('error', error)
+            res.json({ message: "Error ocurred, please try again" })
+        })
+});
+
+// delete a task inside a job
+router.delete('/tasks/:id', (req, res) => {
+    Task.findByIdAndRemove(req.params.id)
+        .then(response => {
+            console.log('This was delete', response);
+            res.json({ message: `${req.params.id} was deleted` });
+        })
+        .catch(error => {
+            console.log('error', error)
+            res.json({ message: "Error ocurred, please try again" });
+        })
 });
 
 module.exports = router;
