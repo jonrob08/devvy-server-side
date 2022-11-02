@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
-const taskInfoSchema = new Schema({
+const itemSchema = new Schema({
     title: {
         type: String,
         required: true
@@ -21,6 +21,6 @@ const taskInfoSchema = new Schema({
 }, {timestamps: true}
 )
 
-const TaskInfo = mongoose.model('TaskInfo', taskInfoSchema);
+const TaskInfo = mongoose.model('Item', itemSchema);
 
 module.exports = TaskInfo;
