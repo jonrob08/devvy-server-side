@@ -15,9 +15,16 @@ const userSchema = new Schema({
         required: true,
         minLength: 8
     },
+    profilePreferences: {
+        
+    },
     jobs: [{
         type: mongoose.Schema.Types.ObjectId, 
         ref: 'Job'
+    }],
+    team: [{
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'Team'
     }]
 }, {
     timestamps: true

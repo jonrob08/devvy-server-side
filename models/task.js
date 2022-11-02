@@ -21,7 +21,7 @@ const taskSchema = new Schema({
     },
     taskInfo: [{
         type: mongoose.Schema.Types.ObjectId, 
-        ref: 'TaskInfo'
+        ref: 'Item'
     }]
 }, {timestamps: true}
 )
