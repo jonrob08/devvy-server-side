@@ -2,47 +2,51 @@
 require('dotenv').config()
 const express = require('express');
 const cors = require('cors');
-const passport = require('passport');
 const mongoose = require('mongoose');
-require('./config/passport')(passport);
+const morgan = require('morgan');
+const AuthRoute = require('./routes/Auth');
+const PostRoute = require('./routes/Post');
+const UserRoute = require('./routes/User');
+const JobRoute = require('./routes/Job')
 
-// App Set up
+// Init App
 const app = express();
-const PORT = process.env.PORT || 8000;
 
 // Middleware
 app.use(express.urlencoded({ extended: false }));
-app.use(express.json()); // JSON parsing
+app.use(express.json({limit:"100mb"})); // JSON parsing
 app.use(cors()); // allow all CORS requests
-app.use(passport.initialize());
-
-// Database Set Up
-const MONGO_CONNECTION_STRING = process.env.MONGO_CONNECTION_STRING;
-mongoose.connect(MONGO_CONNECTION_STRING, { useNewUrlParser: true, useUnifiedTopology: true });
-const db = mongoose.connection;
-
-db.once('open', () => {
-    console.log(`Connected to MongoDB at HOST: ${db.host} and PORT: ${db.port}`);
-});
-
-db.on('error', (error) => {
-    console.log(`Database Error: ${error}`);
-})
+app.use(morgan('tiny'));
+app.use('/public/uploads', express.static(__dirname + '/public/uploads'));
 
 // API Routes
 app.get('/', (req, res) => {
-  res.json({ name: 'MERN Auth API', greeting: 'Welcome to the our API', author: 'YOU', message: "Smile, you are being watched by the Backend Engineering Team" });
+  res.send("You are connected succesfully");
 });
 
-// app.use('/examples', require('./controllers/example'));
-app.use('/users', require('./controllers/user'));
+const baseURL = '/api/v1'
 
-app.use('/jobs', require('./controllers/job'));
+app.use(`${baseURL}/auth`, AuthRoute);
+app.use(`${baseURL}/post`, PostRoute);
+app.use(`${baseURL}/user`, UserRoute);
+app.use(`${baseURL}/job`, JobRoute);
+
+// app.use('/users', require('./controllers/user'));
+
+// app.use('/jobs', require('./controllers/job'));
 
 // app.use('/tasks', require('./controllers/task'));
 
+// Database Set Up and Connection
+const PORT = process.env.PORT || 8000;
 
-// Server
-const server = app.listen(PORT, () => console.log(`Server is running on PORT: ${PORT}`));
-
-module.exports = server;
+const MONGO_CONNECTION_STRING = process.env.MONGO_CONNECTION_STRING;
+mongoose
+  .connect(MONGO_CONNECTION_STRING, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() =>
+    app.listen(PORT, () => console.log(`Server Runing on port ${PORT}`))
+  )
+  .catch((err) => console.log(err.message));

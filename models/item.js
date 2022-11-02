@@ -20,7 +20,6 @@ const itemSchema = new Schema({
     }
 }, {timestamps: true}
 )
+ 
 
-const TaskInfo = mongoose.model('Item', itemSchema);
-
-module.exports = TaskInfo;
+module.exports = mongoose.model('Item', itemSchema);
