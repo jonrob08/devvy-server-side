@@ -7,7 +7,7 @@ module.exports = (req, res, next) => {
     return res.status(401).json({ message: "you must be logged in !" });
 
   const Token = authorization.replace("Bearer ", "");
-  JWT.verify(Token, process.env.SECRET_KEY, async (err, payload) => {
+  JWT.verify(Token, process.env.JWT_SECRET, async (err, payload) => {
     if (err)
       return res.status(401).json({ message: "you must be logged in !" });
     const { userId } = payload;
