@@ -53,10 +53,8 @@ const UserSchema = mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId, 
         ref: 'Team'
     }],
-    createdAt:{
-        type:Date,
-        default:Date.now
-    }
+},{
+    timestamps: true
 })
 
 module.exports = mongoose.model('user', UserSchema);
