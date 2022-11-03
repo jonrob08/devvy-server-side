@@ -1,122 +1,96 @@
-// Imports
-require('dotenv').config();
-const express = require('express');
-const router = express.Router();
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const passport = require('passport');
-const { JWT_SECRET } = process.env;
+const User = require("../models/user");
+const Cloudinary = require("../middleware/Cloudinary");
 
-// DB Models
-const User = require('../models/user');
+// get user info by ID
+const UserInfo = async (req, res) => {
+  try {
+    // get user by params of id (other users on platform)
+    const getUser = await User.findById(req.params.userId).select("-password");
+    if (!getUser) return res.status(404).json({ message: "user not found!!" });
+    return res.status(200).json(getUser);
+  } catch (error) {
+    return res.status(500).json(error.message);
+  }
+};
 
-// Controllers
-router.get('/test', (req, res) => {
-    res.json({ message: 'User endpoint OK! ✅' });
-});
+// get user dashboard info
 
-router.post('/signup', (req, res) => {
-    // POST - adding the new user to the database
-    console.log('===> Inside of /signup');
-    console.log('===> /register -> req.body',req.body);
+// get user profile (signed in user)
+const ProfileInfo = async (req, res) => {
+  try {
+    const SignedUser = await User.findById(req.user._id)
+      .select("-password")
+      .populate("followers", "profile_pic username");
+    if (!SignedUser)
+      return res.status(404).json({ message: "user not found!!" });
+    return res.status(200).json(SignedUser);
+  } catch (error) {
+    return res.status(500).json(error.message);
+  }
+};
 
-    User.findOne({ email: req.body.email })
-    .then(user => {
-        // if email already exists, a user will come back
-        if (user) {
-            // send a 400 response
-            return res.status(400).json({ message: 'Email already exists' });
-        } else {
-            // Create a new user
-            const newUser = new User({
-                name: req.body.name,
-                email: req.body.email,
-                password: req.body.password
-            });
+// get all users
+const allUsers = async (req, res) => {
+  try {
+    const findUsers = await User.find({}).select(
+      "profile_pic username followers"
+    );
+    if (!findUsers)
+      return res.status(500).json({ message: "somthing went wrong !!" });
+    //return users without signed user
+    return res
+      .status(200)
+      .json(
+        findUsers.filter(
+          (user) => user._id.toString() !== req.user._id.toString()
+        )
+      );
+  } catch (error) {
+    return res.status(500).json(error.message);
+  }
+};
 
-            // Salt and hash the password - before saving the user
-            bcrypt.genSalt(10, (err, salt) => {
-                if (err) throw Error;
-
-                bcrypt.hash(newUser.password, salt, (err, hash) => {
-                    if (err) console.log('==> Error inside of hash', err);
-                    // Change the password in newUser to the hash
-                    newUser.password = hash;
-                    newUser.save()
-                    .then(createdUser => res.json({ user: createdUser}))
-                    .catch(err => {
-                        console.log('error with creating new user', err);
-                        res.json({ message: 'Error occured... Please try again.'});
-                    });
-                });
-            });
-        }
-    })
-    .catch(err => { 
-        console.log('Error finding user', err);
-        res.json({ message: 'Error occured... Please try again.'})
-    })
-});
-
-router.post('/login', async (req, res) => {
-    // POST - finding a user and returning the user
-    console.log('===> Inside of /login');
-    console.log('===> /login -> req.body', req.body);
-
-    const foundUser = await User.findOne({ email: req.body.email });
-
-    if (foundUser) {
-        // user is in the DB
-        let isMatch = await bcrypt.compare(req.body.password, foundUser.password);
-        console.log('Does the passwords match?', isMatch);
-        if (isMatch) {
-            // if user match, then we want to send a JSON Web Token
-            // Create a token payload
-            // add an expiredToken = Date.now()
-            // save the user
-            const payload = {
-                id: foundUser.id,
-                email: foundUser.email,
-                name: foundUser.name
-            }
-
-            jwt.sign(payload, JWT_SECRET, { expiresIn: 3600 }, (err, token) => {
-                if (err) {
-                    res.status(400).json({ message: 'Session has endedd, please log in again'});
-                }
-                const legit = jwt.verify(token, JWT_SECRET, { expiresIn: 60 });
-                console.log('===> legit', legit);
-                res.json({ success: true, token: `Bearer ${token}`, userData: legit });
-            });
-
-        } else {
-            return res.status(400).json({ message: 'Email or Password is incorrect' });
-        }
-    } else {
-        return res.status(400).json({ message: 'User not found' });
+// edit user data
+const editUser = async (req, res) => {
+  try {
+    //check if user want to edit images like profile pic or not
+    if (Object.keys(req.files).length) {
+      // upload images to cloudinary then store url which is returned from cloudinary after upload
+      var ImgObj = {};
+      for (let key in req.files) {
+        const Img_Url = await Cloudinary.uploader.upload(
+          req.files[key][0].path
+        );
+        ImgObj = {
+          ...ImgObj,
+          [key]: Img_Url.url,
+          public_id: Img_Url.public_id,
+        };
+      }
     }
-});
 
-// private
-router.get('/profile', passport.authenticate('jwt', { session: false }), (req, res) => {
-    console.log('====> inside /profile');
-    console.log(req.body);
-    console.log('====> user')
-    console.log(req.user);
-    const { id, name, email } = req.user; // object with user object inside
-    res.json({ id, name, email });
-});
+    // get user and update data
+    const getUser = await User.findByIdAndUpdate(
+      req.user._id,
+      {
+        ...req.body,
+        ...ImgObj,
+        // profile_pic:req.files.profile_pic&&`${req.protocol}://${req.get("host")}/public/uploads/${req.files.profile_pic[0].filename}`,
+        // cover_pic:req.files.cover_pic&&`${req.protocol}://${req.get("host")}/public/uploads/${req.files.cover_pic[0].filename}`
+      },
+      { new: true }
+    );
+    // check if user exists
+    if (!getUser) return res.status(404).json({ message: "user not found !!" });
+    return res.status(200).json(getUser);
+  } catch (error) {
+    return res.status(500).json(error.message);
+  }
+};
 
-router.get('/messages', passport.authenticate('jwt', { session: false }), async (req, res) => {
-    console.log('====> inside /messages');
-    console.log(req.body);
-    console.log('====> user')
-    console.log(req.user);
-    const { id, name, email } = req.user; // object with user object inside
-    const messageArray = ['message 1', 'message 2', 'message 3', 'message 4', 'message 5', 'message 6', 'message 7', 'message 8', 'message 9'];
-    const sameUser = await User.findById(id);
-    res.json({ id, name, email, message: messageArray, sameUser });
-});
-
-// Exports
-module.exports = router;
+module.exports = {
+  UserInfo,
+  ProfileInfo,
+  allUsers,
+  editUser,
+};

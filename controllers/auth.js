@@ -1,63 +1,91 @@
-const express = require('express');
-const router = express.Router();
-const passport = require('../config/ppConfig');
-const db = require('../models');
+const user = require("../models/user");
+const bcrypt = require("bcrypt");
+const JWT = require("jsonwebtoken");
+require("dotenv").config();
 
-router.get("/signup", (req, res) => {
-  res.render("auth/signup");
-});
-
-router.get("/login", (req, res) => {
-  res.render("auth/login");
-});
-
-router.get('/logout', (req, res) => {
-  req.logout(() => {
-    console.log("I am logged out")
-  }); // logs the user out of the session
-  req.flash('success', 'Logging out... See you next time!');
-  res.redirect('/');
-});
-
-router.post('/login', passport.authenticate('local', {
-  successRedirect: '/',
-  failureRedirect: '/auth/login',
-  successFlash: 'Welcome back ...',
-  failureFlash: 'Either email or password is incorrect'
-}));
-
-// auth/signup
-router.post('/signup', async (req, res) => {
-  // we now have access to the user info (req.body);
-  const { email, name, password } = req.body; // goes and us access to whatever key/value inside of the object
+// create new account
+// email extensions
+const EmailEX = [
+  "@gmail.com",
+  "@yahoo.com",
+  "@hotmail.com",
+  "@outlook.com",
+  "@aol.com",
+];
+const Signup = async (req, res) => {
   try {
-    const [user, created] = await db.user.findOrCreate({
-      where: { email },
-      defaults: { name, password }
-    });
-
-    if (created) {
-      // if created, success and we will redirect back to / page
-      console.log(`----- ${user.name} was created -----`);
-      const successObject = {
-        successRedirect: '/',
-        successFlash: `Welcome ${user.name}. Account was created and logging in...`
-      }
-      // 
-      passport.authenticate('local', successObject)(req, res);
-    } else {
-      // Send back email already exists
-      req.flash('error', 'Email already exists');
-      res.redirect('/auth/signup'); // redirect the user back to sign up page to try again
+    const { username, fullname, email, password, day, month, year } = req.body;
+    // check if user entered required data or not
+    if (
+      !username ||
+      !fullname ||
+      !email ||
+      !password ||
+      !day ||
+      !month ||
+      !year
+    ) {
+      return res.status(403).json({ message: "All fields required!!" });
     }
+    // check email validation
+    if (!EmailEX.some((emailex) => email.includes(emailex))) {
+      return res.status(400).json({ message: "Please Enter Valied Email !!" });
+    }
+
+    // check if email has registered before
+    const findEmail = await user.findOne({ email });
+    if (findEmail) {
+      return res
+        .status(400)
+        .json({ message: "This email already registed !!" });
+    }
+
+    // hash password
+    const hashpass = bcrypt.hashSync(password, 10);
+    // create new user
+    let newUser = new user({ ...req.body, password: hashpass });
+    newUser = await newUser.save();
+
+    // check if user created or not
+    if (!newUser)
+      return res.status(500).json({ message: "Sorry, something went wrong" });
+    return res.status(200).json({ message: "Account created Successfully" });
   } catch (error) {
-    // There was an error that came back; therefore, we just have the user try again
-    console.log('**************Error');
-    console.log(error);
-    req.flash('error', 'Either email or password is incorrect. Please try again.');
-    res.redirect('/auth/signup');
+    return res.status(403).json({ message: error });
   }
-});
+};
 
+//Login
+const Login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    //check if user entered password and email or not
+    if (!email || !password)
+      return res.status(403).json({ message: "Email and password required " });
+    //get user from database
+    const finduser = await user.findOne({ email });
+    // check user and password
+    if (finduser && bcrypt.compareSync(password, finduser.password)) {
+      const token = JWT.sign({ userId: finduser._id }, process.env.SECRET_KEY, {
+        expiresIn: "1d",
+      });
+      return res
+        .status(200)
+        .json({
+          username: finduser.username,
+          surname: finduser.surname,
+          token,
+          _id: finduser._id,
+          profile_pic: finduser.profile_pic,
+        });
+    }
+    return res.status(400).json({ message: "Invalied Email or Password " });
+  } catch (error) {
+    return res.status(403).json({ message: error.message });
+  }
+};
 
-module.exports = router;
+module.exports = {
+  Signup,
+  Login,
+};

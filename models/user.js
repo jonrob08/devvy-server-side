@@ -1,23 +1,50 @@
 const mongoose = require('mongoose');
-const { Schema } = mongoose;
 
-const userSchema = new Schema({
-    name: {
-        type: String,
-        required: true
+const UserSchema = mongoose.Schema({
+    username:{
+        type:String,
     },
-    email: {
-        type: String,
-        required: true
+    full_name:{
+        type:String,
     },
-    password: {
-        type: String,
-        required: true,
-        minLength: 8
+    profile_pic:{
+        type:String,
+        default:"https://pbs.twimg.com/media/BtFUrp6CEAEmsml.jpg"
     },
-    profilePreferences: {
-        
+    cover_pic:{
+        type:String,
+        default:""
     },
+    mobile:{
+        type:Number,
+    },
+    email:{
+        type:String,
+    },
+    password:{
+        type:String,
+    },
+    day:{
+        type:String,
+    },
+    month:{
+        type:String,
+    },
+    year:{
+        type:String,
+    },
+    gender:{
+        type:String,
+        default:"male"
+    },
+    following:[{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:'user'
+    }],
+    followers:[{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:'user'
+    }],
     jobs: [{
         type: mongoose.Schema.Types.ObjectId, 
         ref: 'Job'
@@ -25,11 +52,9 @@ const userSchema = new Schema({
     team: [{
         type: mongoose.Schema.Types.ObjectId, 
         ref: 'Team'
-    }]
-}, {
+    }],
+},{
     timestamps: true
 })
 
-const User = mongoose.model('User', userSchema);
-
-module.exports = User;
+module.exports = mongoose.model('user', UserSchema);

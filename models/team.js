@@ -13,6 +13,4 @@ const teamSchema = new Schema({
     timestamps: true
 })
 
-const Team = mongoose.model('Team', teamSchema);
-
-module.exports = Team;
+module.exports = mongoose.model('Team', teamSchema);
