@@ -24,10 +24,6 @@ const findAllJobs = async (req, res) => {
             console.log('All jobs', jobs);
             res.json({ jobs: jobs });
         })
-        .catch(error => { 
-            console.log('error', error)
-            res.json({ message: 'Error occured, please try again' });
-        });
         return res.status(200).json(getJobs);
     } catch (error) {
         return res.status(500).json({ message: error.message });

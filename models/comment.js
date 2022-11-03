@@ -18,12 +18,9 @@ const commentSchema = mongoose.Schema({
     like:[{
         type:mongoose.Schema.Types.ObjectId,
         ref:'user'
-    }],
-    createdAt:{
-        type:Date,
-        required:true,
-        default:Date.now
-    }
+    }]
+}, {
+    timestamps: true
 })
 
 module.exports = mongoose.model('comment' , commentSchema);
