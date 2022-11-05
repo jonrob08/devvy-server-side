@@ -14,11 +14,11 @@ const EmailEX = [
 ];
 const Signup = async (req, res) => {
   try {
-    const { username, fullname, email, password, day, month, year } = req.body;
+    const { username, full_name, email, password, day, month, year } = req.body;
     // check if user entered required data or not
     if (
       !username ||
-      !fullname ||
+      !full_name ||
       !email ||
       !password ||
       !day ||
