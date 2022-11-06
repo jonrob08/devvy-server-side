@@ -2,9 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Task = require("../models/task");
 const Job = require("../models/job");
-const Comment = require("../models/comment");
-const Post = require("../models/post");
-const { findById } = require("../models/comment");
+const Item = require("../models/item")
 
 // router.get('/', (req, res) => {
 //     Job.find({})
@@ -18,9 +16,10 @@ const { findById } = require("../models/comment");
 //     });
 // });
 
-const findAllJobs = async (req, res) => {
+// Find all items in a task in a job
+const findAllItems = async (req, res) => {
   try {
-    const getJobs = await Job.find({}).then((jobs) => {
+    const getJob = await Job.find({}).then((jobs) => {
       console.log("All jobs", jobs);
       res.json({ jobs: jobs });
     });

@@ -26,7 +26,11 @@ const jobSchema = new Schema({
     tasks: [{
         type: mongoose.Schema.Types.ObjectId, 
         ref: 'Task'
-    }]
+    }],
+    team: [{
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'Team'
+    }],
 }, {timestamps: true}
 )
 
