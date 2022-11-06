@@ -4,11 +4,13 @@ const { Schema } = mongoose;
 const taskSchema = new Schema({
     title: {
         type: String,
-        required: true
+        required: true,
+        default: "test default"
     },
     description: {
         type: String,
-        required: true
+        required: true,
+        default: "default description"
     },
     status: {
         type: String
@@ -19,7 +21,7 @@ const taskSchema = new Schema({
     timeSpent: {
         type: String
     },
-    taskInfo: [{
+    items: [{
         type: mongoose.Schema.Types.ObjectId, 
         ref: 'Item'
     }]
@@ -28,4 +30,4 @@ const taskSchema = new Schema({
 
 
 
-module.exports = mongoose.model('task', taskSchema);
+module.exports = mongoose.model('Task', taskSchema);

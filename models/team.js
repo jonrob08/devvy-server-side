@@ -4,11 +4,12 @@ const { Schema } = mongoose;
 const teamSchema = new Schema({
     name: {
         type: String,
-        required: true
+        required: true,
     },
-    teamMembers: {
-        type: Array,
-    }
+    users: [{
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'User'
+    }],
 }, {
     timestamps: true
 })

@@ -19,6 +19,7 @@ db.on('error', (error) => {
 const User = require('./models/user');
 const Job = require('./models/job');
 const Task = require('./models/task');
+const Item = require('./models/item')
 
 // Job.create({
 //     title: "Test Job 2",
@@ -63,6 +64,59 @@ const Task = require('./models/task');
 //     console.log('Created task')
 // })
 
+// const createItemByTaskId = async (req, res) => {
+//     try {
+//       const job = await Job.findById(req.params.id);
+//       job.tasks.
+//       console.log("This is the task>>>>>", task)
+//       job.tasks.push(task);
+//       // save the job
+//       job.save();
+//       console.log("This is the job with the task>>>>>", job)
+//       // res.redirect(`api/v1/job/${req.params.id}`);
+//     } catch (error) {
+//       console.log(error);
+//     }
+//   };
+
+const newJob = new Job({
+    title: "Job 1",
+    url: "www.google.com",
+    description: "this is a test for items",
+    status: "In Progress",
+    contactEmail: "gmail@google.com",
+    contactName: "Test McTest",
+})
+
+const newTask = new Task({
+    title: 'this is the first task',
+    description: 'this is a task',
+    status: "Complete", 
+    dueDate: '2022-11-15',
+    timeSpent: 'Hella',
+})
+
+const newItem = new Item({
+    title: 'this is the first item',
+    description: 'this is an item',
+    status: "Not Complete", 
+    dueDate: '2022-11-15',
+    timeSpent: 'Hella',
+})
+
+newItem.save()
+
+newTask.items.push(newItem)
+
+newTask.save()
+
+// newJob.tasks.push(newTask)
+
+newJob.save(function(err){
+    if (err) return console.log(err)
+    console.log('Created item inside task inside job')
+})
+
 
 const newUser = new User({
     username: "BigDog10",
@@ -75,9 +129,4 @@ const newUser = new User({
     month: "10",
     year: "1990",
     gender: "male",
-})
-
-newUser.save((err) => {
-    if(err) return console.log(err)
-    console.log('New user created')
 })

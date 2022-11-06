@@ -37,6 +37,14 @@ const UserSchema = mongoose.Schema({
         type:String,
         default:"male"
     },
+    available:{
+        type:Boolean,
+        default: false,
+    },
+    bio: {
+        type:String,
+        default:"Hello, Devvy!"
+    },
     following:[{
         type:mongoose.Schema.Types.ObjectId,
         ref:'user'
