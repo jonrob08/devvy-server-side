@@ -57,10 +57,6 @@ const UserSchema = mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId, 
         ref: 'Job'
     }],
-    team: [{
-        type: mongoose.Schema.Types.ObjectId, 
-        ref: 'Team'
-    }],
 },{
     timestamps: true
 })

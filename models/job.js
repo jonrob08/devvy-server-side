@@ -23,10 +23,10 @@ const jobSchema = new Schema({
     contactName: {
         type: String
     },
-    tasks: [{
+    user: {
         type: mongoose.Schema.Types.ObjectId, 
-        ref: 'Task'
-    }],
+        ref: 'User'
+    },
     team: [{
         type: mongoose.Schema.Types.ObjectId, 
         ref: 'Team'
