@@ -1,5 +1,5 @@
 const express = require("express");
-const Follow = require('../controllers/temp-follow');
+const { Follow } = require('../controllers/temp-follow');
 const {
   UserInfo,
   ProfileInfo,

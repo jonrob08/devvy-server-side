@@ -1,6 +1,6 @@
 const express = require("express");
-const { addComment, deleteComment } = require("../controllers/Comment");
-const Like = require("../controllers/Like");
+const { addComment, deleteComment } = require("../controllers/temp-comment");
+const Like = require("../controllers/temp-like");
 const {
   createPost,
   alluserPosts,
