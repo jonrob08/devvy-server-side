@@ -63,7 +63,7 @@ const jobById = async (req, res) => {
           ],
         },
       },
-      {$limit: 1}
+      { $limit: 1 }
       // { $unwind:{
       //     path: "$tasks",
       //     preserveNullAndEmptyArrays: true
@@ -159,16 +159,10 @@ const updateJob = async (req, res) => {
       {
         title: req.body.title ? req.body.title : getJob.title,
         url: req.body.url ? req.body.url : getJob.url,
-        description: req.body.description
-          ? req.body.description
-          : getJob.description,
+        description: req.body.description ? req.body.description : getJob.description,
         status: req.body.status ? req.body.status : getJob.status,
-        contactEmail: req.body.contactEmail
-          ? req.body.contactEmail
-          : getJob.contactEmail,
-        contactName: req.body.contactName
-          ? req.body.contactName
-          : getJob.contactName,
+        contactEmail: req.body.contactEmail ? req.body.contactEmail : getJob.contactEmail,
+        contactName: req.body.contactName ? req.body.contactName : getJob.contactName,
       },
       {
         upsert: true,
@@ -315,7 +309,7 @@ const createTaskByJobId = async (req, res) => {
 // });
 const updateTaskById = async (req, res) => {
   try {
-    const task = await Task.findById(req.params.id);
+    const task = await Item.findById(req.params.id);
     let newTask = await Task.findByIdAndUpdate(req.params.id, {
       title: req.body.title ? req.body.title : task.title,
       description: req.body.description
