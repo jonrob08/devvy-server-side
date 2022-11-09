@@ -8,7 +8,6 @@ const AuthRoute = require('./routes/Auth');
 const PostRoute = require('./routes/Post');
 const UserRoute = require('./routes/User');
 const JobRoute = require('./routes/Job')
-const TeamRoute = require('./routes/Team')
 
 // Init App
 const app = express();
@@ -31,7 +30,6 @@ app.use(`${baseURL}/auth`, AuthRoute);
 app.use(`${baseURL}/post`, PostRoute);
 app.use(`${baseURL}/user`, UserRoute);
 app.use(`${baseURL}/job`, JobRoute);
-app.use(`${baseURL}/team`, TeamRoute);
 
 // Database Set Up and Connection
 const PORT = process.env.PORT || 8000;

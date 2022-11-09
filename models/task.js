@@ -21,10 +21,10 @@ const taskSchema = new Schema({
     timeSpent: {
         type: String
     },
-    items: [{
+    job: {
         type: mongoose.Schema.Types.ObjectId, 
-        ref: 'Item'
-    }]
+        ref: 'Job'
+    },
 }, {timestamps: true}
 )
 

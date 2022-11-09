@@ -110,7 +110,7 @@ newTask.items.push(newItem)
 
 newTask.save()
 
-// newJob.tasks.push(newTask)
+newJob.tasks.push(newTask)
 
 newJob.save(function(err){
     if (err) return console.log(err)

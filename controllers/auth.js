@@ -3,9 +3,9 @@ const bcrypt = require("bcrypt");
 const JWT = require("jsonwebtoken");
 require("dotenv").config();
 
-// create new account
-// email extensions
-const EmailEX = [
+// Create new account
+// Valid email extensions
+const EmailEx = [
   "@gmail.com",
   "@yahoo.com",
   "@hotmail.com",
@@ -28,7 +28,7 @@ const Signup = async (req, res) => {
       return res.status(403).json({ message: "All fields required!!" });
     }
     // check email validation
-    if (!EmailEX.some((emailex) => email.includes(emailex))) {
+    if (!EmailEx.some((emailex) => email.includes(emailex))) {
       return res.status(400).json({ message: "Please Enter Valied Email !!" });
     }
 

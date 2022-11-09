@@ -1,4 +1,5 @@
 const express = require("express");
+const mongoose = require("mongoose");
 const router = express.Router();
 const Task = require("../models/task");
 const Job = require("../models/job");
@@ -20,11 +21,8 @@ const { findById } = require("../models/comment");
 
 const findAllJobs = async (req, res) => {
   try {
-    const getJobs = await Job.find({}).then((jobs) => {
-      console.log("All jobs", jobs);
-      res.json({ jobs: jobs });
-    });
-    return res.status(200).json(getJobs);
+    const jobs = await Job.find({ user: req.user._id });
+    return res.status(200).json({ jobs });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -45,8 +43,40 @@ const findAllJobs = async (req, res) => {
 
 const jobById = async (req, res) => {
   try {
-    const getOneJob = await Job.findById(req.params.id);
-    return res.status(200).json(getOneJob);
+    const getOneJob = await Job.aggregate([
+      { $match: { _id: mongoose.Types.ObjectId(req.params.id) } },
+      {
+        $lookup: {
+          from: "tasks",
+          localField: "_id",
+          foreignField: "job",
+          as: "tasks",
+          pipeline: [
+            {
+              $lookup: {
+                from: "items",
+                localField: "_id",
+                foreignField: "task",
+                as: "items",
+              },
+            },
+          ],
+        },
+      },
+      {$limit: 1}
+      // { $unwind:{
+      //     path: "$tasks",
+      //     preserveNullAndEmptyArrays: true
+
+      // }},
+      // {$lookup: {
+      //     from: 'items',
+      //     localField: "tasks._id",
+      //     foreignField: "task",
+      //     as: "tasks.items"
+      // }},
+    ]);
+    return res.status(200).json(getOneJob[0]);
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -80,6 +110,7 @@ const createJob = async (req, res) => {
       status: req.body.status,
       contactEmail: req.body.contactEmail,
       contactName: req.body.contactName,
+      user: req.user._id,
     });
     return res.status(200).json(newJob);
   } catch (error) {
@@ -176,7 +207,7 @@ const deleteJob = async (req, res) => {
   }
 };
 
-// =============== BELOW RELATED TO COMMENTS ======================
+// =============== BELOW RELATED TO Tasks ======================
 
 // router.get('/tasks/:id', (req, res) => {
 //     Task.findById(req.params.id)
@@ -190,14 +221,7 @@ const deleteJob = async (req, res) => {
 //     });
 // }
 
-// // GET a Jobs tasks
-// router.get('/:id/tasks', (req, res) => {
-//     Job.findById(req.params.id).populate('tasks').exec()
-//     .then(task => {
-//         console.log('Hey this is the task', task);
-//         res.json({task: task })
-//     })
-// })
+// GET a Jobs tasks
 
 const getTasks = async (req, res) => {
   try {
@@ -241,19 +265,20 @@ const getTasks = async (req, res) => {
 
 const createTaskByJobId = async (req, res) => {
   try {
-    const job = await Job.findById(req.params.id);
+    // const job = await Job.findById(req.params.id);
     let task = await Task.create({
       title: req.body.title,
       description: req.body.description,
       status: req.body.status,
       dueDate: req.body.dueDate,
       timeSpent: req.body.timeSpent,
+      job: req.params.id,
     });
-    console.log("This is the task>>>>>", task)
-    job.tasks.push(task);
-    // save the job
-    job.save();
-    console.log("This is the job with the task>>>>>", job)
+    return res.status(200).send(task);
+    // job.tasks.push(task);
+    // // save the job
+    // job.save();
+    // console.log("This is the job with the task>>>>>", job)
     // res.redirect(`api/v1/job/${req.params.id}`);
   } catch (error) {
     console.log(error);
@@ -289,21 +314,23 @@ const createTaskByJobId = async (req, res) => {
 //         })
 // });
 const updateTaskById = async (req, res) => {
-    try {
-      const task = await Task.findById(req.params.id);
-      let newTask = await Task.findByIdAndUpdate(req.params.id, {
-        title: req.body.title ? req.body.title : task.title,
-        description: req.body.description ? req.body.description : task.description,
-        status: req.body.status ? req.body.status : task.status,
-        dueDate: req.body.dueDate ? req.body.dueDate : task.dueDate,
-        timeSpent: req.body.timeSpent ? req.body.timeSpent : task.timeSpent,
-      });
-      res.json({task: newTask})
-      // res.redirect(`api/v1/job/${req.params.id}`);
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  try {
+    const task = await Task.findById(req.params.id);
+    let newTask = await Task.findByIdAndUpdate(req.params.id, {
+      title: req.body.title ? req.body.title : task.title,
+      description: req.body.description
+        ? req.body.description
+        : task.description,
+      status: req.body.status ? req.body.status : task.status,
+      dueDate: req.body.dueDate ? req.body.dueDate : task.dueDate,
+      timeSpent: req.body.timeSpent ? req.body.timeSpent : task.timeSpent,
+    });
+    res.json({ task: newTask });
+    // res.redirect(`api/v1/job/${req.params.id}`);
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 // // delete a task inside a job
 // router.delete('/tasks/:id', (req, res) => {
@@ -319,16 +346,17 @@ const updateTaskById = async (req, res) => {
 // });
 
 const deleteTask = async (req, res) => {
-    try {
-      const id = req.params.id;
-      if (!id) return res.status(404).json({ message: "task not found !!" });
-      await Task.findByIdAndRemove(id);
-      return res.status(200).json({ message: "Task Deleted successfully" });
-    } catch (error) {
-      return res.status(500).json({ message: "something went wrong !!" });
-    }
-  };
+  try {
+    const id = req.params.id;
+    if (!id) return res.status(404).json({ message: "task not found !!" });
+    await Task.findByIdAndRemove(id);
+    return res.status(200).json({ message: "Task Deleted successfully" });
+  } catch (error) {
+    return res.status(500).json({ message: "something went wrong !!" });
+  }
+};
 
+// Item routes
 
 module.exports = {
   findAllJobs,
@@ -339,5 +367,5 @@ module.exports = {
   getTasks,
   createTaskByJobId,
   updateTaskById,
-  deleteTask
+  deleteTask,
 };
