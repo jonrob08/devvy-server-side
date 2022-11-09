@@ -1,11 +1,11 @@
 const express = require("express");
-const { Follow } = require("../controllers/Follow");
+const { Follow } = require("../controllers/follow");
 const {
   UserInfo,
   ProfileInfo,
   allUsers,
   editUser,
-} = require("../controllers/User");
+} = require("../controllers/user");
 const Auth = require("../middleware/Auth");
 const uploadOptions = require("../middleware/uploads");
 
