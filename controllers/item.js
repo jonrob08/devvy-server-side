@@ -37,6 +37,7 @@ const updateItemByTask = async (req, res) => {
 
 const deleteItemByTask = async (req, res) => {
   try {
+    return res.end()
   } catch (error) {
     console.log(error);
     return res.end()

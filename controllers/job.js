@@ -21,7 +21,27 @@ const { findById } = require("../models/comment");
 
 const findAllJobs = async (req, res) => {
   try {
-    const jobs = await Job.find({ user: req.user._id });
+    const jobs = await Job.aggregate([
+        { $match: { user: mongoose.Types.ObjectId(req.user._id) } },
+        {
+          $lookup: {
+            from: "tasks",
+            localField: "_id",
+            foreignField: "job",
+            as: "tasks",
+            pipeline: [
+              {
+                $lookup: {
+                  from: "items",
+                  localField: "_id",
+                  foreignField: "task",
+                  as: "items",
+                },
+              },
+            ],
+          },
+        },
+      ]);
     return res.status(200).json({ jobs });
   } catch (error) {
     return res.status(500).json({ message: error.message });
